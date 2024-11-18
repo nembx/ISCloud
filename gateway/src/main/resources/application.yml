@@ -1,0 +1,77 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: gateway
+  main:
+    web-application-type: reactive
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: 123456
+      lettuce:
+        pool:
+          max-active: 8 #最大连接
+          max-idle: 8 #最大空闲连接
+          min-idle: 0 #最小空闲连接
+          max-wait: 100ms #连接等待时间
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/user/**
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/order/**
+        - id: item-service
+          uri: lb://item-service
+          predicates:
+            - Path=/item/**
+      globalcors: #全局跨域处理
+        add-to-simple-url-handler-mapping: true #解决Options请求被拦截
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: #允许那些网站的跨域请求
+              - "http://localhost:5173"
+              - "https://api.bilibili.com"
+              - "http://10.10.5.201:5173/"
+            allowedMethods: #允许跨域的ajax请求方式
+              - "GET"
+              - "POST"
+              - "DELETE"
+              - "PUT"
+              - "OPTIONS"
+            allowedHeaders: "*" #允许在请求中携带的头信息
+            allowCredentials: true #是否允许携带cookie
+            maxAge: 360000 #跨域检测的有效期
+nembx:
+  auth:
+    skip:
+      - /user/login
+      - /user/register
+      - /item/searchItem/{item_name}
+      - /doc.html
+      - /webjars/**
+      - /swagger-resources/**
+      - /**/v3/api-docs/**
+      - /swagger-ui/**
+      - /swagger-resources/**
+      - /order/notifyUrl
+
+
+knife4j:
+  gateway:
+    enabled: true
+    strategy: discover
+    discover:
+      enabled: true
+      version: openapi3
+
+
